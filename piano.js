@@ -1,6 +1,14 @@
 let wkeys = [];
 let bkeys = [];
 let gap = [2, 6, 9, 13, 16, 20, 23, 27];
+let wcol = [];
+let bcol = [];
+var clicked;
+var up;
+var freq;
+var key;
+let keywave = [];
+var change;
 
 function setup() {
     createCanvas(window.innerWidth,window.innerHeight);
@@ -52,6 +60,14 @@ function setup() {
             bkeys[k] = (wkeys[i] - 1) + e;
         }
     }
+    for (i = 0; i < 28; i++)
+    {
+        wcol[i] = 255;
+    }
+    for (i = 0; i < 20; i++)
+    {
+        bcol[i] = 0;
+    }
 }
 
 function draw() {
@@ -60,10 +76,16 @@ function draw() {
     {
         rectMode(CORNER);
         fill("white");
+        if (wcol[i] != 255)
+        {
+            fill(200);
+        }
         rect(width / 28 * i, (height / 4), (width / 28), (height / 2));
     }
+    k = -1;
     for (i = 0; i < 28; i++)
     {
+        k++
         for (j = 0; j < 8; j++)
         {
             if (i == gap[j])
@@ -73,14 +95,16 @@ function draw() {
         }
         rectMode(CENTER);
         fill("black");
+        if (bcol[k] != 0)
+        {
+            fill(75);
+        }
         rect(width / 28 * (i + 1), (height / 8 * 3), (width / (28 * 1.5)), (height / 4));
     }
 }
 
 function mousePressed() {
-    var clicked = 0;
-    var up = 0;
-    var freq = 0;
+    up = 0;
     if (mouseY > (height / 4) && mouseY < height * 3 / 4)
     {
         for (i = 0; i < 28; i++)
@@ -121,6 +145,7 @@ function mousePressed() {
             {
                 freq = round(pow(2, (wkeys[clicked] / 12.0)) * 440);
             }
+            wcol[clicked] = 200;
         }
         else if (up == 1)
         {
@@ -132,17 +157,164 @@ function mousePressed() {
             {
                 freq = round(pow(2, (bkeys[clicked] / 12.0)) * 440);
             }
+            bcol[clicked] = 75;
         }
         console.log(freq);
-        wave = new p5.Oscillator();
-        wave.setType('sine');
-        wave.start();
-        wave.amp(1);
-        wave.freq(freq);
+        mousewave = new p5.Oscillator();
+        mousewave.setType('sine');
+        mousewave.start();
+        mousewave.amp(1);
+        mousewave.freq(freq);
     }
 }
 
 function mouseReleased()
 {
-    wave.stop();
+    mousewave.stop();
+    if (up == 0)
+    {
+        wcol[clicked] = 255;
+    }
+    else if (up == 1)
+    {
+        bcol[clicked] = 0;
+    }
+}
+
+function keyPressed()
+{
+    up = 0;
+    key = keynumber(keyCode);
+    console.log(key);
+    if (key > 28 || key < 0)
+    {
+        return;
+    }
+    up = pressblack(key);
+    if (up == 0)
+    {
+        wcol[key] = 200;
+        if (key < 13)
+        {
+            freq = round(pow(2, (-1 * wkeys[key] / 12.0)) * 440);
+        }
+        else if (key > 12)
+        {
+            freq = round(pow(2, (wkeys[key] / 12.0)) * 440);
+        }
+    }
+    if (up == 1)
+    {
+        change = whiteblackchange(key);
+        bcol[key - change] = 75;
+        if (key < 13)
+        {
+            freq = round(pow(2, (-1 * (wkeys[key] - 1) / 12.0)) * 440);
+        }
+        else if (key > 12)
+        {
+            freq = round(pow(2, ((wkeys[key] + 1)/ 12.0)) * 440);
+        }
+    }
+    console.log(freq);
+    keywave[key * 2 + up] = new p5.Oscillator();
+    keywave[key * 2 + up].setType('sine');
+    keywave[key * 2 + up].start();
+    keywave[key * 2 + up].amp(1);
+    keywave[key * 2 + up].freq(freq);
+}
+
+function keyReleased()
+{
+    key = keynumber(keyCode);
+    if (key > 28 || key < 0)
+    {
+        return;
+    }
+    up = pressblack(key);
+    keywave[key * 2 + up].stop();
+    if (up == 0)
+    {
+        wcol[key] = 255;
+    }
+    else if (up == 1)
+    {
+        change = whiteblackchange(key);
+        bcol[key - change] = 0;
+    }
+}
+
+function keynumber(codenumber)
+{
+    key = 30;
+    let oct4 = [81, 87, 69, 82, 84, 89, 85];
+    let oct5 = [65, 83, 68, 70, 71, 72, 74];
+    let oct6 = [90, 88, 67, 86, 66, 78, 77];
+    var oct = 0;
+    var note = 0;
+    for (o = 49; o <= 55; o++)
+    {
+        if (codenumber === o)
+        {
+            oct = 3;
+            note = o - 49;
+        }
+    }
+    for (o = 0; o < 7; o++)
+    {
+        if (codenumber === oct4[o])
+        {
+            oct = 4;
+            note = o;
+        }
+    }
+    for (o = 0; o < 7; o++)
+    {
+        if (codenumber === oct5[o])
+        {
+            oct = 5;
+            note = o;
+        }
+    }
+    for (o = 0; o < 7; o++)
+    {
+        if (codenumber === oct6[o])
+        {
+            oct = 6;
+            note = o;
+        }
+    }
+    key = note + 7 * (oct - 3);
+    return key;
+}
+
+function pressblack(key)
+{
+    up = 0;
+    var count = 0;
+    for (j = 0; j < 8; j++)
+    {
+        if (keyIsDown(SHIFT) && key != gap[j])
+        {
+            count++
+        }
+    }
+    if (count == 8)
+    {
+        up = 1;
+    }
+    return up;
+}
+
+function whiteblackchange(key)
+{
+    change = 0;
+    for (j = 0; j < 8; j++)
+    {
+        if (key < gap[j] && key > gap[j - 1])
+        {
+            change = j;
+            return change;
+        }
+    }
 }
