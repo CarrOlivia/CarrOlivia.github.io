@@ -134,7 +134,6 @@ function mousePressed() {
                 }
             }
         }
-        console.log(clicked);
         if (up == 0)
         {
             if (clicked < 13)
@@ -159,7 +158,6 @@ function mousePressed() {
             }
             bcol[clicked] = 75;
         }
-        console.log(freq);
         mousewave = new p5.Oscillator();
         mousewave.setType('sine');
         mousewave.start();
@@ -185,7 +183,6 @@ function keyPressed()
 {
     up = 0;
     key = keynumber(keyCode);
-    console.log(key);
     if (key > 28 || key < 0)
     {
         return;
@@ -216,7 +213,6 @@ function keyPressed()
             freq = round(pow(2, ((wkeys[key] + 1)/ 12.0)) * 440);
         }
     }
-    console.log(freq);
     keywave[key * 2 + up] = new p5.Oscillator();
     keywave[key * 2 + up].setType('sine');
     keywave[key * 2 + up].start();
@@ -311,10 +307,11 @@ function whiteblackchange(key)
     change = 0;
     for (j = 0; j < 8; j++)
     {
-        if (key < gap[j] && key > gap[j - 1])
+        if (key < gap[j + 1] && key > gap[j])
         {
-            change = j;
+            change = j + 1;
             return change;
         }
     }
+    return change;
 }
